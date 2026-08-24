@@ -1,5 +1,5 @@
 # Oceanographic_drivers_gopher_rockfish
-Repository for the manuscript "Linking Oceanographic Drivers to Historical Recruitment to Forecast the Future of a Nearshore, Spring-Spawning Rockfish in a Changing Ocean "
+Repository for the manuscript "Linking Oceanographic Drivers to Historical Recruitment for a Nearshore, Spring-Spawning Rockfish Allows Forecasts of Population Dynamics in a Changing Ocean"
 
 
 ## Order of code 
