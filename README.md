@@ -12,7 +12,8 @@ Repository for the manuscript "Linking Oceanographic Drivers to Historical Recru
 | --- | --- | --- |
 | Historical ROMS-NEMUCSC | Personal Contact | Jerome Fiechter |
 | Future ROMS-NEMUCSC | Personal Contact | Jerome Fiechter |
-| CUTI | Jacox et al., 2018 | https://mjacox.com/upwelling-indices/ |
+| Historical CUTI | Jacox et al., 2018 | https://mjacox.com/upwelling-indices/ |
+| Future CUTI | Jacox et al., 2024 | https://doi.org/10.5281/zenodo.10887772 |
 | PDO | Huang et al., 2025 | https://www.ncei.noaa.gov/pub/data/cmb/ersst/v5/v6/index/ersst.v6.pdo.dat |
 | ONI | Bamston et al., 1997 | https://psl.noaa.gov/data/timeseries/month/DS/ONI/ |
 | Recruitmet Data | Monk and He, 2019 | [(https://www.pcouncil.org/stock-assessments-star-reports-stat-reports-rebuilding-analyses-terms-of-reference/groundfish-stock-assessment-documents/)] |
