@@ -1,0 +1,13 @@
+Model,Scenario,delta_dev_expl,delta_AIC,delta_RMSE_loo
+Tlarv + CUTIben + Chlaben,Drop 1995,-0.015,-1.73,-0.014
+Tlarv + CUTIben + Chlaben,Drop 1996,-0.019,0.69,0.004
+Tlarv + CUTIben + Chlaben,Drop 1997,0.009,0.87,0.012
+Tlarv + CUTIben + Chlaben,Drop 1995-1997,-0.034,0.07,0.003
+DOegg + CUTIben + Chlaben,Drop 1995,-0.047,0.02,0.007
+DOegg + CUTIben + Chlaben,Drop 1996,-0.02,0.76,0.014
+DOegg + CUTIben + Chlaben,Drop 1997,0.015,-0.81,-0.009
+DOegg + CUTIben + Chlaben,Drop 1995-1997,-0.05,-1.05,-0.013
+pHegg + CUTIben + Chlaben,Drop 1995,-0.027,0.57,0.024
+pHegg + CUTIben + Chlaben,Drop 1996,-0.021,1.1,0.011
+pHegg + CUTIben + Chlaben,Drop 1997,0.015,-0.05,0.004
+pHegg + CUTIben + Chlaben,Drop 1995-1997,-0.041,0.23,0.003

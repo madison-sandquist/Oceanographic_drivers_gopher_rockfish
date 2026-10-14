@@ -1,5 +1,5 @@
 ---
-title: "Oceanographic drivers of gopher rockfish recruitment — manuscript analyses (GAM)"
+title: "Oceanographic drivers of gopher rockfish recruitment — manuscript analyses"
 author: "Madison Sandquist"
 date: "`r Sys.Date()`"
 output: github_document
@@ -16,7 +16,7 @@ library(mgcv) # GAM pacage
 library(r4ss) # to get stock assessment deviations
 library(DHARMa) # model diagonistics
 library(patchwork)   # multi-panel assembly
-
+library(corrplot) # correlation plot
 # font size for all figures 
 BASE_SIZE <- 16
 theme_set(theme_bw(base_size = BASE_SIZE))
@@ -46,7 +46,6 @@ rec_dev_se <- goph2019$parameters %>%
 goph_recruit <- goph_dev %>%
   left_join(rec_dev_se, by = "recruit_year")
 head(goph_recruit)
-
 ```
 
 ## Figure 1 — Spawning output, recruitment, and the stock–recruit relationship
@@ -147,7 +146,7 @@ pC <- ggplot(sr_curve, aes(SSB, Recruitment)) +
 Figure1 <- (pAB | pC) + plot_annotation(tag_levels = "A")
 Figure1
 
-ggsave("Figures/Figure1_stock_recruit.png", Figure1,
+ggsave("Figures/Figure1_stock_recruit.jpeg", Figure1,
        width = 9, height = 4, dpi = 300)
 
 ```
@@ -156,27 +155,27 @@ ggsave("Figures/Figure1_stock_recruit.png", Figure1,
 
 ```{r monthly-drivers}
 # ROMS
-roms <- read_csv("../Data/monthly_averages_allyear_1995_2020_ALL_41to34p4.csv") %>%
+roms <- read_csv("Data/monthly_averages_allyear_1995_2020_ALL_41to34p4.csv") %>%
   transmute(Year, Month = match(Month, month.abb),
             Temperature = Temperature_avg, DO = DO_avg, pH = pH_avg,
             Chla = Chla_avg)
 
 # CUTI
-cuti <- read.csv("../Data/CUTI_daily.csv") %>%
+cuti <- read.csv("Data/CUTI_daily.csv") %>%
   select(year, month, X35N, X36N, X37N, X38N, X39N, X40N, X41N) %>%
   pivot_longer(starts_with("X"), names_to = "lat", values_to = "cuti") %>%
   group_by(Year = year, Month = month) %>%
   summarise(CUTI = mean(cuti, na.rm = TRUE), .groups = "drop")
 
 # ONI
-oni <- read.csv("../Data/ONI_data.csv")
+oni <- read.csv("Data/ONI_data.csv")
 names(oni)[1] <- "Year"                     
 oni <- oni %>%
   pivot_longer(all_of(month.abb), names_to = "mon", values_to = "ONI") %>%
   transmute(Year, Month = match(mon, month.abb), ONI)
 
 # PDO
-pdo <- read.csv("../Data/pdo.timeseries.sstens.csv")
+pdo <- read.csv("Data/pdo.timeseries.sstens.csv")
 names(pdo) <- c("Date", "PDO")
 pdo <- pdo %>%
   mutate(Date = as.Date(Date)) %>%
@@ -190,7 +189,7 @@ monthly <- roms %>%
   mutate(recruit_year = Year)
 
 # STI
-sti_raw <- read.csv("../Data/sti.csv")
+sti_raw <- read.csv("Data/sti.csv")
 names(sti_raw)[1] <- "Year"
 sti <- sti_raw %>%
   pivot_longer(-Year, names_to = "lat", values_to = "v") %>%
@@ -200,7 +199,7 @@ sti <- sti_raw %>%
   summarise(STI = mean(v, na.rm = TRUE), .groups = "drop")
 
 # TUMI
-tumi_raw <- read.csv("../Data/tumi.csv")
+tumi_raw <- read.csv("Data/tumi.csv")
 names(tumi_raw)[1] <- "Year"
 tumi <- tumi_raw %>%
   pivot_longer(-Year, names_to = "lat", values_to = "v") %>%
@@ -285,7 +284,7 @@ fig_driver_overview <- ggplot() +
   )
 
 fig_driver_overview
-ggsave("Figures/driver_overview_timeseries.png", fig_driver_overview,
+ggsave("Figures/driver_overview_timeseries.jpeg", fig_driver_overview,
        width = 11, height = 9, dpi = 300)
 ```
 
@@ -519,7 +518,7 @@ fig_uni_ts <- ggplot() +
   theme_classic(base_size = BASE_SIZE)
 fig_uni_ts
 
-ggsave("Figures/univariate_gam_timeseries.png", fig_uni_ts, width = 9, height = 5, dpi = 300)
+ggsave("Figures/univariate_gam_timeseries.jpeg", fig_uni_ts, width = 9, height = 5, dpi = 300)
 ```
 
 ## 5c. Figure 3A — driver–deviation relationships
@@ -548,7 +547,7 @@ fig_uni_rel <- ggplot() +
   theme_bw(base_size = BASE_SIZE) +
   theme(legend.position = "none")
 fig_uni_rel
-ggsave("Figures/univariate_gam_relationships.png", fig_uni_rel,
+ggsave("Figures/univariate_gam_relationships.jpeg", fig_uni_rel,
        width = 9, height = 5.5, dpi = 300)
 ```
 
@@ -584,7 +583,7 @@ fig_corr <- ggplot(cm, aes(v1, v2, fill = r)) +
         panel.grid = element_blank()) +
   coord_fixed()
 fig_corr
-ggsave("Figures/driver_correlation.png", fig_corr, width = 8, height = 7, dpi = 300)
+ggsave("Figures/driver_correlation.jpeg", fig_corr, width = 8, height = 7, dpi = 300)
 ```
 ```{r}
 ok  <- abs(cormat) < 0.3
@@ -850,7 +849,7 @@ fig_perm <- ggplot(tibble(dev_expl = null_devexpl), aes(dev_expl)) +
   theme(legend.position = "right", legend.direction = "vertical",
         legend.key.height = unit(1.1, "lines"))
 fig_perm
-ggsave("Figures/SupplementaryInformation/permutation_null.png", fig_perm,
+ggsave("Figures/permutation_null.jpeg", fig_perm,
        width = 7.5, height = 4.5, dpi = 300)
 ```
 
@@ -1003,7 +1002,7 @@ sensitivity_change <- sens_raw %>%
   arrange(Model, Scenario)
 
 # Export the single table
-readr::write_csv(sensitivity_change, "Figures/Tables/Sensitivity_leave_year_out.csv")
+readr::write_csv(sensitivity_change, "Figures/Sensitivity_leave_year_out.csv")
 
 knitr::kable(
   sensitivity_change,
@@ -1207,7 +1206,7 @@ fig4 <- ggplot() +
         legend.position = "none")
 fig4
 
-ggsave("Figures/fig4.png", fig4, width = 10, height = 3.8, dpi = 300)
+ggsave("Figures/fig4.jpeg", fig4, width = 10, height = 3.8, dpi = 300)
 ```
 
 ------------------------------------------------------------------------
@@ -1225,6 +1224,39 @@ m_pheg  <- gam(dev ~ s(pHegg, k = 3) + s(CUTIben, k = 3) + s(Chlaben, k = 3), da
 summary(m_tlarv)
 summary(m_doegg)
 summary(m_pheg)
+```
+```{r}
+# Partial-residual tables for each smooth term in a fitted GAM.
+partial_tables <- function(m, d, vars, n_grid = 100) {
+
+  term_fit  <- predict(m, type = "terms")      # each smooth's contribution
+  work_res  <- residuals(m, type = "working")  # = response residuals for Gaussian/identity
+
+  # Partial residuals = smooth contribution + model residual
+  points <- map_dfr(vars, function(v) {
+    tibble(term = v,
+           x    = d[[v]],
+           pr   = as.numeric(term_fit[, paste0("s(", v, ")")] + work_res),
+           year = d$recruit_year)
+  })
+
+  # Smooth curve and band for each term, with the other drivers held at their mean
+  lines <- map_dfr(vars, function(v) {
+    grid <- as.data.frame(lapply(d[vars], function(z) rep(mean(z, na.rm = TRUE), n_grid)))
+    grid[[v]] <- seq(min(d[[v]], na.rm = TRUE), max(d[[v]], na.rm = TRUE), length.out = n_grid)
+
+    p   <- predict(m, newdata = grid, type = "terms", se.fit = TRUE)
+    col <- paste0("s(", v, ")")
+    tibble(term = v,
+           x    = grid[[v]],
+           fit  = as.numeric(p$fit[, col]),
+           se   = as.numeric(p$se.fit[, col])) %>%
+      mutate(lo = fit - 2 * se, hi = fit + 2 * se) %>%
+      select(-se)
+  })
+
+  list(points = points, lines = lines)
+}
 ```
 
 ```{r}
@@ -1266,7 +1298,7 @@ no_x <- theme(axis.title.x = element_blank(),
 
 full_fig <- (p_tlarv + no_x) / (p_doegg + no_x) / p_pheg
 full_fig
-ggsave("Supplemental/partial_resid_full_3x3.png", full_fig,
+ggsave("Figures/partial_resid_full_3x3.jpeg", full_fig,
        width = 9, height = 11, dpi = 300)
 ```
 
@@ -1337,7 +1369,7 @@ fig_sign <- ggplot(sign_plot_df, aes(model, accuracy, fill = observed)) +
   theme_bw(base_size = BASE_SIZE) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 print(fig_sign)
-ggsave("Supplemental/sign_prediction_accuracy.png", fig_sign, width = 10, height = 4, dpi = 300)
+ggsave("Figures/sign_prediction_accuracy.jpeg", fig_sign, width = 10, height = 4, dpi = 300)
 ```
 
 
@@ -1373,12 +1405,12 @@ ESM_colors <- c(GFDL = "#798E87", HADL = "#C27D38", IPSL = "gold3")
 
 ```{r proj-future-drivers}
 future_ocean <- bind_rows(
-  read.csv("../Data/GFDL_monthly_averages_allyear_2000_2100_ALL_41to34p4.csv") %>% mutate(ESM = "GFDL"),
-  read.csv("../Data/HADL_monthly_averages_allyear_2000_2100_ALL_41to34p4.csv") %>% mutate(ESM = "HADL"),
-  read.csv("../Data/IPSL_monthly_averages_allyear_2000_2100_ALL_41to34p4.csv") %>% mutate(ESM = "IPSL")
+  read.csv("Data/GFDL_monthly_averages_allyear_2000_2100_ALL_41to34p4.csv") %>% mutate(ESM = "GFDL"),
+  read.csv("Data/HADL_monthly_averages_allyear_2000_2100_ALL_41to34p4.csv") %>% mutate(ESM = "HADL"),
+  read.csv("Data/IPSL_monthly_averages_allyear_2000_2100_ALL_41to34p4.csv") %>% mutate(ESM = "IPSL")
 ) %>% mutate(Mnum = match(Month, month.abb)) 
 
-future_cuti <- read.csv("../Data/future_cuti_all_models.csv") %>%
+future_cuti <- read.csv("Data/future_cuti_all_models.csv") %>%
   filter(between(latitude, 35, 41)) %>%
   group_by(ESM = toupper(model), Year = as.integer(year), Mnum = as.integer(month)) %>%
   summarise(CUTI = mean(upwelling_index, na.rm = TRUE), .groups = "drop")
@@ -1451,7 +1483,7 @@ fig_future_box <- ggplot(ocean_future_long, aes(period, value, fill = ESM)) +
                position = position_dodge(width = 0.8),
                shape = 23, size = 2.2, stroke = 0.3)
 fig_future_box
-ggsave("Figures/future_ocean_boxplot.png", fig_future_box, width = 9, height = 3.6, dpi = 300)
+ggsave("Figures/future_ocean_boxplot.jpeg", fig_future_box, width = 9, height = 3.6, dpi = 300)
 ```
 
 ```{r}
@@ -1514,7 +1546,7 @@ fig_proj <- ggplot(proj_long, aes(Year, pred, color = ESM)) +
   labs(x = "Year", y = "Projected recruitment deviation", title = "") +
   theme_bw(base_size = BASE_SIZE)
 fig_proj
-ggsave("Figures/projected_recruitment.png", fig_proj, width = 9, height = 8, dpi = 300)
+ggsave("Figures/projected_recruitment.jpeg", fig_proj, width = 9, height = 8, dpi = 300)
 ```
 
 ------------------------------------------------------------------------
@@ -1542,7 +1574,7 @@ dharma_plot <- function() {
   plot(simulationOutput)
 }
 
-png("Supplemental/model_1_res.png", width = 7, height = 5, units = "in", res = 300)
+png("Figures/model_1_res.jpeg", width = 7, height = 5, units = "in", res = 300)
 plot(simulationOutput)
 dev.off()
 
@@ -1559,7 +1591,7 @@ cooks_by_year <- ggplot(md_tlarv3, aes(x = recruit_year, y = cooks.distance)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 cooks_by_year
-ggsave("Supplemental/model_1_cooks.png", cooks_by_year, width = 4, height = 4, dpi = 300)
+ggsave("Figures/model_1_cooks.jpeg", cooks_by_year, width = 4, height = 4, dpi = 300)
 
 influence_plot <- ggplot(md_tlarv3, aes(x = leverage, y = residuals.standard)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
@@ -1575,7 +1607,7 @@ influence_plot <- ggplot(md_tlarv3, aes(x = leverage, y = residuals.standard)) +
   theme(plot.title = element_text(hjust = 0.5))
 influence_plot
 
-ggsave("Supplemental/model_1_influence.png", influence_plot, width = 4, height = 4, dpi = 300)
+ggsave("Figures/model_1_influence.jpeg", influence_plot, width = 4, height = 4, dpi = 300)
 
 ```
 
@@ -1601,7 +1633,7 @@ dharma_plot <- function() {
   plot(simulationOutput)
 }
 
-png("Supplemental/model_6_res.png", width = 7, height = 5, units = "in", res = 300)
+png("Figures/model_6_res.jpeg", width = 7, height = 5, units = "in", res = 300)
 plot(simulationOutput)
 dev.off()
 
@@ -1618,7 +1650,7 @@ cooks_by_year <- ggplot(md_doegg3, aes(x = recruit_year, y = cooks.distance)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 cooks_by_year
-ggsave("Supplemental/model_6_cooks.png", cooks_by_year, width = 4, height = 4, dpi = 300)
+ggsave("Figures/model_6_cooks.jpeg", cooks_by_year, width = 4, height = 4, dpi = 300)
 
 
 influence_plot <- ggplot(md_doegg3, aes(x = leverage, y = residuals.standard)) +
@@ -1634,7 +1666,7 @@ influence_plot <- ggplot(md_doegg3, aes(x = leverage, y = residuals.standard)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 influence_plot
-ggsave("Supplemental/model_6_influence.png", influence_plot, width = 4, height = 4, dpi = 300)
+ggsave("Figures/model_6_influence.jpeg", influence_plot, width = 4, height = 4, dpi = 300)
 
 ```
 
@@ -1660,7 +1692,7 @@ dharma_plot <- function() {
   plot(simulationOutput)
 }
 
-png("Supplemental/model_2_res.png", width = 7, height = 5, units = "in", res = 300)
+png("Figures/model_2_res.jpeg", width = 7, height = 5, units = "in", res = 300)
 plot(simulationOutput)
 dev.off()
 
@@ -1677,7 +1709,7 @@ cooks_by_year <- ggplot(md_pheg3, aes(x = recruit_year, y = cooks.distance)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 cooks_by_year
-ggsave("Supplemental/model_2_cooks.png", cooks_by_year, width = 4, height = 4, dpi = 300)
+ggsave("Figures/model_2_cooks.jpeg", cooks_by_year, width = 4, height = 4, dpi = 300)
 
 influence_plot <- ggplot(md_pheg3, aes(x = leverage, y = residuals.standard)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
@@ -1692,6 +1724,6 @@ influence_plot <- ggplot(md_pheg3, aes(x = leverage, y = residuals.standard)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 influence_plot
-ggsave("Supplemental/model_2_influence.png", influence_plot, width = 4, height = 4, dpi = 300)
+ggsave("Figures/model_2_influence.jpeg", influence_plot, width = 4, height = 4, dpi = 300)
 
 ```
